@@ -1,0 +1,65 @@
+<nav class="bg-white border-gray-200 dark:bg-gray-900">
+  <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+      <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Transcendence</span>
+    </div>
+    <div class="md:block md:w-auto">
+      <ul
+        class="font-medium flex md:p-0 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white md:dark:bg-gray-900 dark:border-gray-700">
+        <li>
+          <button onclick="moveKek('/')"
+            class="block text-white rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
+            aria-current="page">Home</button>
+        </li>
+        <% if (authen && authen.authenticated) {%>
+          <li>
+            <button onclick="moveKek('/logout')"
+              class="block px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Logout</button>
+          </li>
+          <% } else {%>
+            <li>
+              <button onclick="moveKek('/login')"
+                class="block px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Login</button>
+            </li>
+            <% } %>
+              <% if (authen && authen.authenticated) {%>
+                <li>
+                  <button onclick="moveKek('/user?user=<%= authen.user.username.replace(" ", "+")%>')" class="block
+                     text-white md:bg-transparent md:text-blue-700 md:p-0 dark:text-white
+                    md:dark:text-blue-500" aria-current="page"><%= authen.user.username %></button>
+                </li>
+                <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="flex flex-col items-center justify-center px-6 py-8">
+    <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                Create an account
+            </h1>
+            <form  class="space-y-4 md:space-y-6">
+                <div>
+                    <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
+                    <input name="username" id="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" maxlength="20" required="">
+                </div>
+                <div>
+                    <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+                    <input type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" maxlength="20" required="">
+                </div>
+                <div>
+                    <label for="confirm-password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm password</label>
+                    <input type="confirm-password" name="confirm-password" id="confirm-password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" maxlength="20" required="">
+                </div>
+              </form>
+              <button onclick="userCreation()" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Create an account</button>
+              <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                <a href="/login/google" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Register with Google</a>
+              </p>
+              <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                  Already have an account? <button onclick="moveKek('/login')" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login here</button>
+              </p>
+        </div>
+    </div>
+</div>

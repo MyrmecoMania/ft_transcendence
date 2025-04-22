@@ -1,0 +1,146 @@
+services:
+  app:
+    build:
+      context: dummy-app
+      dockerfile: Dockerfile
+
+########################################
+########################################
+              # ELK
+########################################
+########################################
+  setup:
+    container_name: setup
+    profiles:
+      - setup
+    build:
+      context: ./setup
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+      dockerfile: Dockerfile
+    init: true
+    user: elasticsearch:elasticsearch
+    volumes:
+      - ./setup/entrypoint.sh:/usr/share/elasticsearch/entrypoint.sh
+      - ./setup/lib.sh:/usr/share/elasticsearch/lib.sh
+      - ./setup/roles:/usr/share/elasticsearch/roles
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
+      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+      HEARTBEAT_INTERNAL_PASSWORD: ${HEARTBEAT_INTERNAL_PASSWORD:-}
+      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
+    networks:
+      - elk
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  elasticsearch:
+    container_name: elasticsearch
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    user: elasticsearch:elasticsearch
+    volumes:
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - velk:/usr/share/elasticsearch/data
+      # - velk:/usr/share/elasticsearch/logs
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      node.name: elasticsearch
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      # Bootstrap password.
+      # Used to initialize the keystore during the initial startup of
+      # Elasticsearch. Ignored on subsequent runs.
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+      discovery.type: single-node
+    healthcheck:
+      test: curl -s http://localhost:9200 >/dev/null || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 50
+    networks:
+      - elk
+    restart: unless-stopped
+
+  logstash:
+    container_name: logstash
+    build:
+      context: ./logstash
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - 5044:5044
+      - 50000:50000/tcp
+      - 50000:50000/udp
+      - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    networks:
+      - elk
+    healthcheck:
+      test: curl -s http://localhost:9600 >/dev/null || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 50
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+  kibana:
+    container_name: kibana
+    build:
+      context: ./kibana/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    # ports:
+    #   - 5601:5601
+    environment:
+      ENCRYPTION_KEY_SAVED_OBJECTS: ${ENCRYPTION_KEY_SAVED_OBJECTS}
+      ENCRYPTION_KEY_SECURITY: ${ENCRYPTION_KEY_SECURITY}
+      ENCRYPTION_KEY_REPORTING: ${ENCRYPTION_KEY_REPORTING}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      SERVER_BASEPATH: /kibana
+      SERVER_PUBLICBASEURL: https://localhost/kibana
+      SERVER_REWRITEBASEPATH: 'true'
+    networks:
+      - elk
+    # healthcheck:
+    #   test: curl -s http://localhost:5601 >/dev/null || exit 1
+    #   interval: 5s
+    #   timeout: 5s
+    #   retries: 3
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  elk:
+    driver: bridge
+
+volumes:
+  velk:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: ${VOLUME_DATA}
+      o: 'bind'
+

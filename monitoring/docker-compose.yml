@@ -1,0 +1,92 @@
+services:
+  prometheus:
+    container_name: prometheus
+    build:
+      context: ./prometheus
+      dockerfile: Dockerfile
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - vprom:/prometheus
+    ports:
+      - 9090:9090
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=10d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - elk_elk
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: unless-stopped
+    networks:
+      - elk_elk
+    depends_on:
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    # ports:
+      # - "3002:3002"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - vgraf:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD}
+      # We use docker secret
+      # GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/admin_password
+      # - GF_SERVER_HTTP_PORT=3002
+      GF_SERVER_ROOT_URL: 'http://localhost/grafana/'
+      GF_SERVER_SERVE_FROM_SUB_PATH: true
+    restart: unless-stopped
+    networks:
+      - elk_elk
+    depends_on:
+      - prometheus
+      - node_exporter
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    depends_on:
+      - prometheus
+    networks:
+      - elk_elk
+
+networks:
+  elk_elk:
+    # driver: bridge
+    # name: elk_elk
+    external: true
+
+
+volumes:
+  vprom:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: ${VPROM}
+      o: 'bind'
+  vgraf:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: ${VGRAF}
+      o: 'bind'
+

@@ -1,0 +1,20 @@
+global:
+  resolve_timeout: 5m
+  smtp_from: "<email>"  # Replace with your SES verified email
+  smtp_smarthost: "email-smtp.us-west-2.amazonaws.com:587"  # SES SMTP endpoint for Oregon region
+  smtp_auth_username: "<username>"  # Replace with your SES SMTP credentials
+  smtp_auth_password: "<password>"  # Replace with your SES SMTP credentials
+  smtp_require_tls: true
+
+route:
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 1h
+  receiver: 'email-notifications'
+
+receivers:
+- name: 'email-notifications'
+  email_configs:
+  - to: "<email>"  # Replace with recipient email
+    send_resolved: true

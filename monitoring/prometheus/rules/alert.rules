@@ -1,0 +1,34 @@
+groups:
+- name: cpu_alerts
+  rules:
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage detected"
+      description: "CPU usage has been above 80% for more than 5 minute."
+      value: "{{ $value }}%"
+
+- name: container_alerts
+  rules:
+  - alert: ContainerHighCPUUsage
+    expr: sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (container) * 100 > 80
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Container High CPU Usage"
+      description: "Container {{ $labels.container }} CPU usage is above 80% for more than 5 minutes"
+      value: "{{ $value }}%"
+
+  - alert: ContainerHighMemoryUsage
+    expr: (container_memory_usage_bytes{container!=""} / container_spec_memory_limit_bytes{container!=""} * 100) > 80
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Container High Memory Usage"
+      description: "Container {{ $labels.container }} memory usage is above 80% for more than 5 minutes"
+      value: "{{ $value }}%"

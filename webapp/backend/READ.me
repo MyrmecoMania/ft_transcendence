@@ -1,0 +1,17 @@
+Install all nodes dependencies: 
+        npm install
+
+Compile Typescript file if not already present: 
+        npx tsc src/public/staticJs.ts
+
+Compile TailwindCss file if not already present:
+        npx @tailwindcss/cli -i ./src/public/stylesheet.css -o ./src/public/output.css --watch
+
+Launch server:
+        node src/server.js
+
+Web page accessible at http://localhost:8080/
+
+//frontend
+npx webpack serve // to run the frontend for development
+npx webpack // to generate the dist folder and the bundle.js with the assets

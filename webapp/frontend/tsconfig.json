@@ -1,0 +1,40 @@
+// {
+//   "compilerOptions": {
+//     // "allowJs": true,
+//     "target": "es6",
+//     "module": "ESNext",
+//     "moduleResolution": "node",
+//     "noResolve": false,
+//     "noImplicitAny": false,
+//     "preserveConstEnums":true,
+//     "lib": [
+//         "dom",
+//         "es6"
+//     ],
+//     // "types": [
+//     //   "@babylonjs/core",
+//     //   "@babylonjs/gui"
+//     // ],
+//   }
+// }
+
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es6",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "noResolve": false,
+    "noImplicitAny": false,
+    "preserveConstEnums":true,
+    "outDir": "dist",
+    "lib": [
+        "dom",
+        "es6"
+    ],
+    // "types": [
+    //   "@babylonjs/core",
+    //   "@babylonjs/gui"
+    // ],
+  }
+}

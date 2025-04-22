@@ -1,0 +1,46 @@
+services:
+  avax:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    container_name: avax
+    ports:
+      - "3232:3232"
+    volumes:
+      - ./service/src:/usr/src/app/src
+      - ./service/package-lock.json:/usr/src/app/package-lock.json
+      - ./service/package.json:/usr/src/app/package.json
+      - ../data/logs/avax:/var/log/app
+    networks:
+      - netwurk_avax
+    restart: unless-stopped
+  # avash:
+  #   build:
+  #     context: ./avash
+  #     dockerfile: Dockerfile
+  #   # volumes:
+  #   #   - ./kek.avash.yml:/app/avash/kek.avash.yml
+  #   ports:
+  #     - "9650:9650" # Avalanche node RPC
+
+  # truffle:
+  #   build: ./truffle
+  #   volumes:
+  #     - ./truffle:/app
+  #   depends_on:
+  #     - avash
+  #   entrypoint: ["truffle", "migrate", "--network", "avash"]
+
+networks:
+  netwurk_avax:
+    driver: bridge
+    name: elk_elk
+    external: true
+
+# volumes:
+#   avalanche_data:
+#     driver: local
+#     driver_opts:
+#       type: 'none'
+#       device: ${AVALANCHE_DATA}
+#       o: 'bind'
